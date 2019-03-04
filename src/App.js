@@ -2,9 +2,24 @@ import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import key from "./keys.json";
+import { timingSafeEqual } from 'crypto';
+import axios from 'axios'
 
-var omdbAPIkey = key.OMDB_API_KEY;
+const OMDB_Api = key.OMDB_API.key;
+// movie IDs below for testing:
+const blackPantherId = "tt1825683";
+const captainMarvelId = "tt4154664";
 
+// OMDb API: http://www.omdbapi.com/?i=tt3896198&apikey=e06fa2f6
+function loadMovie(id) {
+
+  let queryURL = ("http://www.omdbapi.com/?i=" + captainMarvelId + "&apikey=" + OMDB_Api)
+  axios.get(queryURL,
+  ).then(function (response) {
+    let results = response.data
+    console.log(results)
+  })
+};
 class App extends Component {
 
 
@@ -15,7 +30,11 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
-          <h1>{omdbAPIkey}</h1>
+          <button
+            id="testButton"
+            onClick={() => loadMovie("ID")}
+          >TEST BUTTON
+          </button>
           <p>
             Edit <code>src/App.js</code> and save to reload.
           </p>
@@ -29,7 +48,7 @@ class App extends Component {
             Learn React
           </a>
         </header>
-      </div>
+      </div >
     );
   }
 }
