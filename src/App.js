@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
+import MovieGraph from './components/MovieGraph';
 import key from "./keys.json";
 import { timingSafeEqual } from 'crypto';
 import axios from 'axios'
@@ -13,7 +14,8 @@ const captainMarvelId = "tt4154664";
 // OMDb API: http://www.omdbapi.com/?i=tt3896198&apikey=e06fa2f6
 function loadMovie(id) {
 
-  let queryURL = ("http://www.omdbapi.com/?i=" + captainMarvelId + "&apikey=" + OMDB_Api)
+  // let queryURL = ("http://www.omdbapi.com/?i=" + captainMarvelId + "&apikey=" + OMDB_Api)
+  let queryURL = ("http://www.omdbapi.com/?t=" + "Lego movie" + "&apikey=" + OMDB_Api)
   axios.get(queryURL,
   ).then(function (response) {
     let results = response.data
@@ -30,6 +32,7 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
+          <MovieGraph />
           <button
             id="testButton"
             onClick={() => loadMovie("ID")}
