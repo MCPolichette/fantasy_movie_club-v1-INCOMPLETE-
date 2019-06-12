@@ -11,6 +11,8 @@ import movieIds from './components/moviedata.json'
 import { Chart } from "react-charts";
 const OMDB_Api = key.OMDB_API.key;
 
+var request = require('request');
+var cheerio = require('cheerio');
 
 // movie IDs below for testing:
 // const blackPantherId = "tt1825683";
@@ -21,22 +23,62 @@ const teams = [
   {
     name: "Petunia",
     movies: [
+      "tt5461944", //Hotel Mumvai
+      "tt6320628", //Spiderman far from home
+      "tt3861390", //Dumbo
+    ]
+  },
+  {
+    name: "Simba",
+    movies: [
       "tt4154664" //Captain Marvel
     ]
+  },
+  {
+    name: "They Might Be Winners",
+    movies: [
+      "tt6857112", //Us
+      "tt2386490" //How to train your dragon.  TEST
+    ]
   }
+];
+// Another Test Array:
+const testArray = [
+  "tt5461944", //Hotel Mumvai
+  "tt6320628", //Spiderman far from home
+  "tt3861390", //Dumbo
+  "tt4154664", //Captain Marvel
+  "tt6857112", //Us
+  "tt2386490" //How to train your dragon.  TEST
 ]
-function loadMovie(id) {
-  let queryURL = ("http://www.omdbapi.com/?i=" + captainMarvelId + "&apikey=" + OMDB_Api)
-  // let queryURL = ("http://www.omdbapi.com/?t=" + "Lego movie" + "&apikey=" + OMDB_Api)
+function runTest() {
+  testArray.forEach(this.loadMovie())
+  console.log("DONE")
+};
+function loadMovie(IMDB_Id) {
+  let queryURL = ("http://www.omdbapi.com/?i=" + IMDB_Id + "&apikey=" + OMDB_Api)
   axios.get(queryURL,
   ).then(function (response) {
     let results = response.data
+    console.log(results)
     return (results)
   })
 };
+function IMDBScraper(x){
+  request('https://www.imdb.com/title/'+x, function (error, response, html) {
+    if (!error && response.statusCode == 200) {
+        var $ = cheerio.load(html);
+        $('h4.inline:contains("Gross USA:")').each(function (i, element) {
+            var a = $(this)
+            console.log(a.parent().text())
+        })
+    }
+});
+}
 
 class App extends Component {
   state = {
+    moviesLoaded: false,
     movies: movieIds.data,
     graphData: [],
     movieArray: [],
@@ -54,33 +96,58 @@ class App extends Component {
     }
     console.log(this.state.graphData)
     this.setState({ movies, graphData })
+  };
+  testing() {
+   IMDBScraper("tt2386490")
   }
 
-  RunAPI(teams) {
+  runAPI() {
     // Define the Arrays 
-    let movieArray = [];
-    let teamArray = [];
+
+    let tempMovieArray = [];
+    let tempTeamArray = [];
+    let thisMovie = {}
     for (let i = 0; i < teams.length; i++) {
       let thisTeam = {
-        name: teams.name,
+        name: teams[i].name,
         movies: []
       }
       for (let j = 0; j < teams[i].movies.length; j++) {
         let thisMovie = teams[i].movies[j];
-        let movieObject = loadMovie(thisMovie);
-        thisTeam.movies.push(movieObject)
-        movieArray.push({
-          title: movieObject.title,
-          boxOffice: movieObject
-        });
+        loadMovie = (IMDB_Id) => {
+          let queryURL = ("http://www.omdbapi.com/?i=" + IMDB_Id + "&apikey=" + OMDB_Api)
+          axios.get(queryURL,
+          ).then(function (response) {
+            let results = response.data
+            console.log(results)
+            return (results)
+          })
+        }
+        loadMovie(thisMovie)
+
+        // loadMovie(thisMovie).then(function (results) { console.log("PPPPPPPPPPPPP" + results) });
+        // console.log("XXXXXXXXXXXXXXXXXXX" + movieObject)
+        // thisTeam.movies.push(movieObject)
+        // tempMovieArray.push({
+        //   title: movieObject.Title,
+        //   boxOffice: movieObject.BoxOffice
+        // });
       };
-      teamArray.push(thisMovie)
-      this.setState({ movieArray, teamArray })
-    }
+
+      tempTeamArray.push(thisMovie)
+
+    };
+    this.setState({
+      movieArray: tempMovieArray,
+      teamArray: tempTeamArray,
+      // moviesLoaded: true
+    })
+
   }
   componentDidMount() {
-    this.shuffleMovies();
-    console.log(this.state.movies)
+    // this.shuffleMovies();
+    this.testing()
+    console.log("TEST" + this.state.movieArray, this.state.teamArray)
   }
 
   render() {
@@ -90,7 +157,7 @@ class App extends Component {
       <div className="App">
         <header className="App-header">
           <img src={logo} className="App-logo" alt="logo" />
-          {/* <MovieButton /> */}
+          {/* <MovieButton />
           <TeamGraph />
           {/* <MovieGraph
           data= {this.state.graphData} /> */}
@@ -118,7 +185,7 @@ class App extends Component {
 
           <button
             id="testButton"
-            onClick={() => loadMovie("ID")}
+            onClick={() => this.testing()}
           >TEST BUTTON
           </button>
           <button
@@ -126,18 +193,7 @@ class App extends Component {
             onClick={() => this.shuffleMovies()}
           >ShuffleMovies
           </button>
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
 
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
         </header>
       </div >
     );
